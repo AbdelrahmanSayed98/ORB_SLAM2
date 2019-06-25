@@ -49,6 +49,7 @@ ${Pangolin_INCLUDE_DIRS}
 )
 
 set(LIBS 
+-lboost_system
 ${OpenCV_LIBS} 
 ${EIGEN3_LIBS}
 ${Pangolin_LIBRARIES}
