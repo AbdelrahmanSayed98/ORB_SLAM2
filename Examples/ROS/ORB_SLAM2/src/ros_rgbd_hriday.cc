@@ -1,9 +1,7 @@
 /**
-* Este es el fichero modificado de Hriday para funcionar con VoxBlox
+* Este es el fichero que me pasó Hriday
 *
-* Es necesario modificar la suscripción del TimeStamp.
-*
-* Ya no es
+* Con este código funciona correctamente ORB_SLAM 2 con la RealSense
 *
 */
 
@@ -32,7 +30,6 @@ public:
 
     ros::Publisher pose_pub;
     ros::Publisher path_pub;
-    ros::Publisher pose_transform_pub;
     std::vector<geometry_msgs::PoseStamped> orb_pose_vec;
 
     void GrabRGBD(const sensor_msgs::ImageConstPtr& msgRGB,const sensor_msgs::ImageConstPtr& msgD);
@@ -60,8 +57,8 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
 
-    igb.pose_pub = nh.advertise<geometry_msgs::PoseStamped>("orb_slam/pose", 1);
-    igb.pose_transform_pub = nh.advertise<geometry_msgs::TransformStamped>("orb_slam/pose_transform", 1); // VoxBlox
+    //igb.pose_pub = nh.advertise<geometry_msgs::PoseStamped>("orb_slam/pose", 1);
+    igb.pose_pub = nh.advertise<geometry_msgs::TransformStamped>("orb_slam/pose", 1); // VoxBlox
     igb.path_pub = nh.advertise<nav_msgs::Path>("orb_slam/path",1);
 
 
@@ -137,7 +134,6 @@ void ImageGrabber::GrabRGBD(const sensor_msgs::ImageConstPtr& msgRGB,const senso
     //rotate 270deg about x and 270deg about x to get ENU: x forward, y left, z up
     const tf::Matrix3x3 rotation270degXZ(   0, 1, 0,
                                             0, 0, 1,
-
                                             1, 0, 0);
 
     static tf::TransformBroadcaster br;
@@ -150,40 +146,24 @@ void ImageGrabber::GrabRGBD(const sensor_msgs::ImageConstPtr& msgRGB,const senso
 
     double aux = tfqt[0];
     tfqt[0]=-tfqt[2];
-    tfqt[2]=tfqt[1];//transform
+    tfqt[2]=tfqt[1];
     tfqt[1]=aux;
 
     tf::Transform transform;
-
     transform.setOrigin(globalTranslation_rh);
     transform.setRotation(tfqt);
 
     br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map", "camera_link"));
 
     geometry_msgs::PoseStamped orb_slam_pose;
-    orb_slam_pose.header.stamp = msgD->header.stamp;//ros::Time::now();
+    orb_slam_pose.header.stamp = ros::Time::now();
     orb_slam_pose.header.frame_id = "map";
 
     tf::poseTFToMsg(transform, orb_slam_pose.pose);
     pose_pub.publish(orb_slam_pose);
 
-    geometry_msgs::TransformStamped orb_slam_pose_transform;
-    orb_slam_pose_transform.header.stamp = msgD->header.stamp;
-    orb_slam_pose_transform.header.frame_id = "map";
-
-    orb_slam_pose_transform.transform.translation.x = orb_slam_pose.pose.position.x;
-    orb_slam_pose_transform.transform.translation.y = orb_slam_pose.pose.position.y;
-    orb_slam_pose_transform.transform.translation.z = orb_slam_pose.pose.position.z;
-
-    orb_slam_pose_transform.transform.rotation.x = orb_slam_pose.pose.orientation.x;
-    orb_slam_pose_transform.transform.rotation.y = orb_slam_pose.pose.orientation.y;
-    orb_slam_pose_transform.transform.rotation.z = orb_slam_pose.pose.orientation.z;
-    orb_slam_pose_transform.transform.rotation.w = orb_slam_pose.pose.orientation.w;
-
-    pose_transform_pub.publish(orb_slam_pose_transform);
-
     nav_msgs::Path orb_slam_path;
-    orb_slam_path.header.stamp = msgD->header.stamp;//ros::Time::now();
+    orb_slam_path.header.stamp = ros::Time::now();
     orb_slam_path.header.frame_id = "map";
 
     orb_pose_vec.push_back(orb_slam_pose);
