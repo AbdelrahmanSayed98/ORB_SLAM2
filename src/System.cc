@@ -16,14 +16,49 @@
 *
 * You should have received a copy of the GNU General Public License
 * along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
-*/
+**/
 
-
+/*********
+ * 23/07/2019 Modificacion para eliminar Pangolin y poder ejecutar por SSH
+ *
+ * Es el patch de https://gist.github.com/zezuladp/165d3c9b91ec936f931b5d5b5df74f3a
+ * Como no lo supe ejecutar lo he implementado a mano.
+ *
+ * @@ -23,7 +23,6 @@
+ * #include "System.h"
+ * #include "Converter.h"
+ * #include <thread>
+ * -#include <pangolin/pangolin.h>
+ * #include <iomanip>
+ *
+ * @@ -94,14 +93,6 @@
+ *    mpLoopCloser = new LoopClosing(mpMap, mpKeyFrameDatabase, mpVocabulary, mSensor!=MONOCULAR);
+ *    mptLoopClosing = new thread(&ORB_SLAM2::LoopClosing::Run, mpLoopCloser);
+ *
+ * -    //Initialize the Viewer thread and launch
+ * -    if(bUseViewer)
+ * -    {
+ * -        mpViewer = new Viewer(this, mpFrameDrawer,mpMapDrawer,mpTracker,strSettingsFile);
+ * -        mptViewer = new thread(&Viewer::Run, mpViewer);
+ * -        mpTracker->SetViewer(mpViewer);
+ * -    }
+ * -
+ *
+ * @@ -315,8 +306,6 @@
+ *         usleep(5000);
+ *     }
+ *
+ * -    if(mpViewer)
+ * -        pangolin::BindToContext("ORB-SLAM2: Map Viewer");
+ * }
+ *
+ *
+ * */
 
 #include "System.h"
 #include "Converter.h"
 #include <thread>
-#include <pangolin/pangolin.h>
+//#include <pangolin/pangolin.h>
 #include <iomanip>
 
 namespace ORB_SLAM2
@@ -95,12 +130,12 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     mptLoopClosing = new thread(&ORB_SLAM2::LoopClosing::Run, mpLoopCloser);
 
     //Initialize the Viewer thread and launch
-    if(bUseViewer)
+    /*if(bUseViewer)
     {
         mpViewer = new Viewer(this, mpFrameDrawer,mpMapDrawer,mpTracker,strSettingsFile);
         mptViewer = new thread(&Viewer::Run, mpViewer);
         mpTracker->SetViewer(mpViewer);
-    }
+    }*/
 
     //Set pointers between threads
     mpTracker->SetLocalMapper(mpLocalMapper);
@@ -315,8 +350,8 @@ void System::Shutdown()
         usleep(5000);
     }
 
-    if(mpViewer)
-        pangolin::BindToContext("ORB-SLAM2: Map Viewer");
+    //if(mpViewer)
+    //    pangolin::BindToContext("ORB-SLAM2: Map Viewer");
 }
 
 void System::SaveTrajectoryTUM(const string &filename)
